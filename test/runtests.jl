@@ -16,8 +16,8 @@ using FourierFlows: parsevalsum, xmoment, ymoment
 using GeophysicalFlows: lambdipole, peakedisotropicspectrum
 
 const rtol_lambdipole = 1e-2 # tolerance for lamb dipole tests
-const rtol_niwqg = 1e-13 # tolerance for niwqg forcing tests
-const rtol_twodturb = 1e-13 # tolerance for niwqg forcing tests
+const rtol_barotropicqg = 1e-13 # tolerance for barotropicqg tests
+const rtol_twodturb = 1e-13 # tolerance for twodturb tests
 
 "Get the CFL number, assuming a uniform grid with `dx=dy`."
 cfl(u, v, dt, dx) = maximum([maximum(abs.(u)), maximum(abs.(v))]*dt/dx)

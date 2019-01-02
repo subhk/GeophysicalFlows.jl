@@ -12,7 +12,7 @@ import GeophysicalFlows.BarotropicQG: energy, meanenergy, enstrophy, meanenstrop
 
 # Numerical parameters and time-stepping parameters
 nx  = 512      # 2D resolution = nx^2
-stepper = "FilteredETDRK4"   # timestepper
+stepper = "RK4"   # timestepper
 dt  = 2e-2     # timestep
 nsteps = 20000 # total number of time-steps
 nsubs  = 500   # number of time-steps for plotting
@@ -22,7 +22,6 @@ nsubs  = 500   # number of time-steps for plotting
 Lx  = 2π       # domain size
 nu  = 8.0e-10  # viscosity
 nnu = 2        # viscosity order
-f0  = -1.0     # Coriolis parameter
 beta = 1.4015  # the y-gradient of planetary PV
 mu   = 1.0e-2  # linear drag
    F = 0.0012  # normalized wind stress forcing on domain-averaged
@@ -36,7 +35,7 @@ calcFU(t) = F
 
 
 # Initialize problem
-prob = BarotropicQG.ForcedProblem(nx=nx, Lx=Lx, f0=f0, beta=beta, eta=topoPV,
+prob = BarotropicQG.ForcedProblem(nx=nx, Lx=Lx, beta=beta, eta=topoPV,
                   calcFU=calcFU, nu=nu, nnu=nnu, mu=mu, dt=dt, stepper=stepper)
 sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
 
