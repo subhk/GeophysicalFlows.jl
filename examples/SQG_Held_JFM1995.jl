@@ -63,7 +63,7 @@ nothing #hide
 # and the nonlinear part is computed by the 'calcN!'
 # the equations are in Fourier space
 function Equation(paramas::Params, grid::AbstractGrid)
-    T = eltype(grid)
+    #T = eltype(grid)
     L = @. -paramas.ν*grid.Krsq^paramas.nν
     CUDA.@allowscalar L[1,1] = 0
     return FourierFlows.Equation(L, calcN!, grid)
@@ -97,7 +97,7 @@ function calcN!( N, sol, t, clock, vars, params, grid )
 end 
 nothing #hide
 
-# All ready to go, my master!
+# All are ready to go, my master!
 # Hold on to the moment my apprentice, let me create some helpers to do thing smoothly.
 
 # function which updates the variables in current time!
@@ -151,7 +151,7 @@ nothing # hide
      ny = 512  
 stepper = "FilteredRK4"                 # time-stepping scheme
      dt = 0.01                          # timesep (in seconds)
-     Tf = 60.                           # total time of the simulation
+     Tf = 80.                           # total time of the simulation
  nsteps = Int( Tf/dt )                  # total iteration of the simulation
   nplot = 10 #round( Int, nsteps/100 )      # step to save data
 nothing # hide
@@ -225,13 +225,13 @@ nothing # hide
 
 ### Visulation
 function plot_output(prob)
-    bₛ = prob.vars.b
-    uₛ = prob.vars.u
-    vₛ = prob.vars.v
+    br = prob.vars.b
+    ur = prob.vars.u
+    vr = prob.vars.v
   
-    pbₛ = heatmap(x, y, bₛ',
+    pb = heatmap(x, y, br',
          aspectratio = 1,
-                   c = :deep,
+                   c = :Reds,
                 clim = (0, 1),
                xlims = (-grid.Lx/2, grid.Lx/2),
                ylims = (-grid.Ly/2, grid.Ly/2),
@@ -239,17 +239,17 @@ function plot_output(prob)
               yticks = -3:3,
               xlabel = "x",
               ylabel = "y",
-               title = "buoyancy bₛ",
+               title = "buoyancy",
           framestyle = :box)
   
-    pKE = plot(1,
-               label = "kinetic energy ∫½(uₛ²+vₛ²)dxdy/L²",
-           linewidth = 2,
-              legend = :bottomright,
-               alpha = 0.7,
-               xlims = (0, Tf),
-               ylims = (0, 1e-2),
-              xlabel = "t")
+    # pKE = plot(1,
+    #            label = "kinetic energy",
+    #        linewidth = 2,
+    #           legend = :bottomright,
+    #            alpha = 0.7,
+    #            xlims = (0, Tf),
+    #            ylims = (0, 1e-2),
+    #           xlabel = "t")
   
     # pb² = plot(1,
     #            label = "buoyancy variance ∫bₛ²dxdy/L²",
@@ -262,8 +262,8 @@ function plot_output(prob)
     #           xlabel = "t")
   
     # layout = @layout [a{0.5w} Plots.grid(2, 1)]
-    layout = @layout grid(2, 1)
-    p = plot(pbₛ, pKE, layout=layout, size = (900, 500), dpi=150)
+    # layout = @layout grid(2, 1)
+    p = plot(pb, size = (500, 500), dpi=350)
   
     return p
 end
@@ -293,7 +293,7 @@ anim = @animate for j=0:Int(nsteps/nplot)
 
     p[1][1][:z] = vars.b
     p[1][:title] = "buoyancy, t="*@sprintf("%.2f", clock.t)
-    push!(p[2][1], KE.t[KE.i], KE.data[KE.i])
+    #push!(p[2][1], KE.t[KE.i], KE.data[KE.i])
     #push!(p[3][1], B.t[B.i], B.data[B.i])
   
     stepforward!(prob, diags, nplot)
@@ -301,4 +301,4 @@ anim = @animate for j=0:Int(nsteps/nplot)
 
 end
 
-mp4(anim, "SQG_Held1995.mp4", fps=14)
+mp4(anim, "SQG_Held1995.mp4", fps=8)

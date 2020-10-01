@@ -25,9 +25,9 @@ nothing # hide
 
 # ## Numerical parameters and time-stepping parameters
 
-      n = 256                       # 2D resolution = n²
+      n = 512                       # 2D resolution = n²
 stepper = "FilteredETDRK4"          # timestepper
-     dt = 0.03                      # timestep
+     dt = 0.01                      # timestep
      tf = 60                        # length of time for simulation
  nsteps = Int(tf / dt)              # total number of time-steps
  nsubs  = round(Int, nsteps/100)    # number of time-steps for intermediate logging/plotting (nsteps must be multiple of nsubs)
@@ -121,11 +121,11 @@ nothing # hide
 # kinetic energy and buoyancy variance.
 
 function plot_output(prob)
-  bₛ = prob.vars.b
+  br = prob.vars.b
   uₛ = prob.vars.u
   vₛ = prob.vars.v
 
-  pbₛ = heatmap(x, y, bₛ',
+  pbₛ = heatmap(x, y, br',
        aspectratio = 1,
                  c = :deep,
               clim = (0, 1),
@@ -135,30 +135,32 @@ function plot_output(prob)
             yticks = -3:3,
             xlabel = "x",
             ylabel = "y",
-             title = "buoyancy bₛ",
+             title = "buoyancy",
         framestyle = :box)
 
-  pKE = plot(1,
-             label = "kinetic energy ∫½(uₛ²+vₛ²)dxdy/L²",
-         linewidth = 2,
-            legend = :bottomright,
-             alpha = 0.7,
-             xlims = (0, tf),
-             ylims = (0, 1e-2),
-            xlabel = "t")
+#   pKE = plot(1,
+#              label = "kinetic energy ∫½(uₛ²+vₛ²)dxdy/L²",
+#          linewidth = 2,
+#             legend = :bottomright,
+#              alpha = 0.7,
+#              xlims = (0, tf),
+#              ylims = (0, 1e-2),
+#             xlabel = "t")
 
-  pb² = plot(1,
-             label = "buoyancy variance ∫bₛ²dxdy/L²",
-         linecolor = :red,
-            legend = :bottomright,
-         linewidth = 2,
-             alpha = 0.7,
-             xlims = (0, tf),
-             ylims = (0, 2e-2),
-            xlabel = "t")
+#   pb² = plot(1,
+#              label = "buoyancy variance ∫bₛ²dxdy/L²",
+#          linecolor = :red,
+#             legend = :bottomright,
+#          linewidth = 2,
+#              alpha = 0.7,
+#              xlims = (0, tf),
+#              ylims = (0, 2e-2),
+#             xlabel = "t")
 
-  layout = @layout [a{0.5w} Plots.grid(2, 1)]
-  p = plot(pbₛ, pKE, pb², layout=layout, size = (900, 500), dpi=150)
+#  layout = @layout [a{0.5w} Plots.grid(2, 1)]
+#  layout = @layout [a Plots.grid(1, 1)]
+#  p = plot(pbₛ, pKE, pb², layout=layout, size = (900, 500), dpi=150)
+  p = plot(pbₛ, size = (500, 500), dpi=150)
 
   return p
 end
@@ -186,8 +188,8 @@ anim = @animate for j=0:Int(nsteps/nsubs)
 
   p[1][1][:z] = vars.b
   p[1][:title] = "buoyancy, t="*@sprintf("%.2f", clock.t)
-  push!(p[2][1], KE.t[KE.i], KE.data[KE.i])
-  push!(p[3][1], B.t[B.i], B.data[B.i])
+#   push!(p[2][1], KE.t[KE.i], KE.data[KE.i])
+#   push!(p[3][1], B.t[B.i], B.data[B.i])
 
   stepforward!(prob, diags, nsubs)
   SurfaceQG.updatevars!(prob)
