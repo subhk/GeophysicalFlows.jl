@@ -1,107 +1,138 @@
-push!(LOAD_PATH, "..")
+using Documenter, DocumenterCitations, Literate
 
-using
-  Documenter,
-  Literate,
-  Plots,  # to not capture precompilation output
-  GeophysicalFlows
+using CairoMakie
+# CairoMakie.activate!(type = "svg")
 
-# Gotta set this environment variable when using the GR run-time on Travis CI.
-# This happens as examples will use Plots.jl to make plots and movies.
-# See: https://github.com/jheinen/GR.jl/issues/278
-ENV["GKSwstype"] = "100"
+using GeophysicalFlows
 
 #####
-##### Generate examples
+##### Generate literated examples
 #####
 
 const EXAMPLES_DIR = joinpath(@__DIR__, "..", "examples")
-const OUTPUT_DIR   = joinpath(@__DIR__, "src/generated")
+const OUTPUT_DIR   = joinpath(@__DIR__, "src/literated")
 
 examples = [
-    "twodnavierstokes_decaying.jl",
-    "twodnavierstokes_stochasticforcing.jl",
-    "twodnavierstokes_stochasticforcing_budgets.jl",
-    "barotropicqg_betadecay.jl",
-    "barotropicqg_betaforced.jl",
-    "barotropicqg_acc.jl",
-    "barotropicqgql_betaforced.jl",
-    "multilayerqg_2layer.jl",
-    "surfaceqg_decaying.jl",
+  "twodnavierstokes_decaying.jl",
+  "twodnavierstokes_stochasticforcing.jl",
+  "twodnavierstokes_stochasticforcing_budgets.jl",
+  "singlelayerqg_betadecay.jl",
+  "singlelayerqg_betaforced.jl",
+  "singlelayerqg_decaying_topography.jl",
+  "singlelayerqg_decaying_barotropic_equivalentbarotropic.jl",
+  "barotropicqgql_betaforced.jl",
+  "multilayerqg_2layer.jl",
+  "surfaceqg_decaying.jl",
 ]
 
+
 for example in examples
-  example_filepath = joinpath(EXAMPLES_DIR, example)
   withenv("GITHUB_REPOSITORY" => "FourierFlows/GeophysicalFlowsDocumentation") do
     example_filepath = joinpath(EXAMPLES_DIR, example)
-    Literate.markdown(example_filepath, OUTPUT_DIR, documenter=true)
-    Literate.notebook(example_filepath, OUTPUT_DIR, documenter=true)
-    Literate.script(example_filepath, OUTPUT_DIR, documenter=true)
+    withenv("JULIA_DEBUG" => "Literate") do
+      Literate.markdown(example_filepath, OUTPUT_DIR;
+                        flavor = Literate.DocumenterFlavor(), execute = true)
+    end
   end
 end
+
 
 #####
 ##### Build and deploy docs
 #####
 
-# Set up a timer to print a space ' ' every 240 seconds. This is to avoid Travis CI
-# timing out when building demanding Literate.jl examples.
-Timer(t -> println(" "), 0, interval=240)
-
 format = Documenter.HTML(
-  collapselevel = 2,
-     prettyurls = get(ENV, "CI", nothing) == "true",
-      canonical = "https://fourierflows.github.io/GeophysicalFlowsDocumentation/dev/"
+   collapselevel = 2,
+      prettyurls = get(ENV, "CI", nothing) == "true",
+  size_threshold = 2^21,
+       canonical = "https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/"
 )
+
+bib_filepath = joinpath(dirname(@__FILE__), "src/references.bib")
+bib = CitationBibliography(bib_filepath, style=:authoryear)
 
 makedocs(
- modules = [GeophysicalFlows],
- doctest = false,
-   clean = true,
+  authors = "Navid C. Constantinou, Gregory L. Wagner, and contributors",
+ sitename = "GeophysicalFlows.jl",
+  modules = [GeophysicalFlows],
+  plugins = [bib],
+   format = format,
+  doctest = true,
+    clean = true,
 checkdocs = :all,
-  format = format,
- authors = "Navid C. Constantinou and Gregory L. Wagner",
-sitename = "GeophysicalFlows.jl",
-   pages = Any[
-            "Home"    => "index.md",
-            "Forcing" => "forcing.md",
-            "Modules" => Any[
-              "modules/twodnavierstokes.md",
-              "modules/barotropicqg.md",
-              "modules/barotropicqgql.md",
-              "modules/multilayerqg.md",
-              "modules/surfaceqg.md"
-            ],
-            "Examples" => [
-              "TwoDNavierStokes" => Any[
-                "generated/twodnavierstokes_decaying.md",
-                "generated/twodnavierstokes_stochasticforcing.md",
-                "generated/twodnavierstokes_stochasticforcing_budgets.md",
-                ],
-              "BarotropicQG" => Any[
-                "generated/barotropicqg_betadecay.md",
-                "generated/barotropicqg_betaforced.md",
-                "generated/barotropicqg_acc.md",
-                ],
-              "BarotropicQGQL" => Any[
-                "generated/barotropicqgql_betaforced.md",
-                ],
-              "MultilayerQG" => Any[
-                "generated/multilayerqg_2layer.md"
-                ],
-              "SurfaceQG" => Any[
-                "generated/surfaceqg_decaying.md"
+    pages = Any[
+                  "Home" => "index.md",
+                  "Installation instructions" => "installation_instructions.md",
+                  "Aliasing" => "aliasing.md",
+                  "GPU" => "gpu.md",
+                  "Visualize output" => "visualize.md",
+                  "Examples" => [
+                    "TwoDNavierStokes" => Any[
+                      "literated/twodnavierstokes_decaying.md",
+                      "literated/twodnavierstokes_stochasticforcing.md",
+                      "literated/twodnavierstokes_stochasticforcing_budgets.md",
+                      ],
+                    "SingleLayerQG" => Any[
+                      "literated/singlelayerqg_betadecay.md",
+                      "literated/singlelayerqg_betaforced.md",
+                      "literated/singlelayerqg_decaying_topography.md",
+                      "literated/singlelayerqg_decaying_barotropic_equivalentbarotropic.md"
+                      ],
+                    "BarotropicQGQL" => Any[
+                      "literated/barotropicqgql_betaforced.md",
+                      ],
+                    "MultiLayerQG" => Any[
+                      "literated/multilayerqg_2layer.md"
+                      ],
+                    "SurfaceQG" => Any[
+                      "literated/surfaceqg_decaying.md"
+                      ]
+                    ],
+                  "Modules" => Any[
+                    "modules/twodnavierstokes.md",
+                    "modules/singlelayerqg.md",
+                    "modules/barotropicqgql.md",
+                    "modules/multilayerqg.md",
+                    "modules/surfaceqg.md"
+                    ],
+                  "Stochastic forcing" => "stochastic_forcing.md",
+                  "Contributor's guide" => "contributing.md",
+                  "References" => "references.md",
+                  "Library" => Any[
+                    "lib/types.md",
+                    "lib/functions.md"
+                  ]
                 ]
-            ],
-            "DocStrings" => Any[
-            "man/types.md",
-            "man/functions.md"]
-           ]
 )
 
+@info "Clean up temporary .jld2 and .nc output created by doctests or literated examples..."
+
+"""
+    recursive_find(directory, pattern)
+
+Return list of filepaths within `directory` that contains the `pattern::Regex`.
+"""
+recursive_find(directory, pattern) =
+    mapreduce(vcat, walkdir(directory)) do (root, dirs, files)
+        joinpath.(root, filter(contains(pattern), files))
+    end
+
+files = []
+for pattern in [r"\.jld2", r"\.nc"]
+    global files = vcat(files, recursive_find(@__DIR__, pattern))
+end
+
+for file in files
+    rm(file)
+end
+
 withenv("GITHUB_REPOSITORY" => "FourierFlows/GeophysicalFlowsDocumentation") do
-  deploydocs(        repo = "github.com/FourierFlows/GeophysicalFlowsDocumentation.git",
-                versions = ["stable" => "v^", "v#.#", "dev" => "dev"],
-            push_preview = true
-            )
+  deploydocs(
+             repo = "github.com/FourierFlows/GeophysicalFlowsDocumentation.git",
+         versions = ["stable" => "v^", "dev" => "dev", "v#.#.#"],
+     push_preview = true,
+    repo_previews = "github.com/FourierFlows/GeophysicalFlows.jl.git",
+        forcepush = true,
+        devbranch = "main"
+  )
 end
