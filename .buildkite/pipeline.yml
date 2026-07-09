@@ -9,8 +9,7 @@ steps:
           version: '1.10'
       - JuliaCI/julia-test#v1: ~
     agents:
-      queue: "juliagpu"
-      cuda: "*"
+      queue: "cuda"
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 60
 
@@ -19,10 +18,19 @@ steps:
       - JuliaCI/julia#v1:
           version: '1.11'
       - JuliaCI/julia-test#v1: ~
+    agents:
+      queue: "cuda"
+    if: build.message !~ /\[skip tests\]/
+    timeout_in_minutes: 60
+
+  - label: "🌮 Julia 1.12"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: '1.12'
+      - JuliaCI/julia-test#v1: ~
       - JuliaCI/julia-coverage#v1:
           codecov: true
     agents:
-      queue: "juliagpu"
-      cuda: "*"
+      queue: "cuda"
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 60
